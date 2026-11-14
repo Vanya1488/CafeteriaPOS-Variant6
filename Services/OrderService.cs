@@ -1,5 +1,4 @@
-// Сервис выделяет бизнес-логику из Program.cs.
-// Хранение остаётся учебным: в памяти текущего процесса.
+// The service stores data in memory for this training application.
 internal sealed class OrderService
 {
     private readonly object _sync = new();
@@ -9,52 +8,58 @@ internal sealed class OrderService
         new(2, "Курица с рисом", 250m, true),
         new(3, "Чай", 50m, true)
     };
-
     private readonly List<Order> _orders = new();
 
-    public List<MenuItem> GetMenu() => _menu.ToList();
+    public List<MenuItem> GetMenu()
+    {
+        lock (_sync) return _menu.ToList();
+    }
 
     public List<Order> GetOrders()
     {
-        lock (_sync)
-            return _orders.ToList();
+        lock (_sync) return _orders.ToList();
     }
 
     public IResult CreateOrder(CreateOrderRequest request)
     {
         if (request.Items is null || request.Items.Count == 0)
             return Results.BadRequest(new { error = "Заказ должен содержать позиции." });
-
         var lines = new List<OrderLine>();
-        foreach (var item in request.Items)
-        {
-            if (item.Quantity <= 0)
-                return Results.BadRequest(new { error = "Количество должно быть положительным." });
-
-            var product = _menu.FirstOrDefault(x => x.Id == item.MenuItemId && x.IsAvailable);
-            if (product is null)
-                return Results.BadRequest(new { error = $"Позиция {item.MenuItemId} недоступна." });
-
-            lines.Add(new OrderLine(product.Id, product.Name, product.Price, item.Quantity));
-        }
-
-        decimal total = lines.Sum(x => x.UnitPrice * x.Quantity);
-        Order order;
         lock (_sync)
         {
-            order = new Order(_orders.Count + 1, DateTime.UtcNow, lines, total, "Accepted");
+            foreach (var item in request.Items)
+            {
+                if (item.Quantity <= 0)
+                    return Results.BadRequest(new { error = "Количество должно быть положительным." });
+                var product = _menu.FirstOrDefault(x => x.Id == item.MenuItemId && x.IsAvailable);
+                if (product is null)
+                    return Results.BadRequest(new { error = $"Позиция {item.MenuItemId} недоступна." });
+                lines.Add(new OrderLine(product.Id, product.Name, product.Price, item.Quantity));
+            }
+            decimal total;
+            try { total = lines.Sum(x => checked(x.UnitPrice * x.Quantity)); }
+            catch (OverflowException) { return Results.BadRequest(new { error = "Слишком большая сумма заказа." }); }
+            var order = new Order(_orders.Count + 1, DateTime.UtcNow, lines, total, "Accepted");
             _orders.Add(order);
+            return Results.Created($"/api/v1/orders/{order.Id}", order);
         }
+    }
 
-        return Results.Created($"/api/v1/orders/{order.Id}", order);
+    public IResult UpdatePrice(int id, decimal price)
+    {
+        lock (_sync)
+        {
+            var index = _menu.FindIndex(m => m.Id == id);
+            if (index < 0) return Results.NotFound(new { error = "Блюдо не найдено." });
+            _menu[index] = _menu[index] with { Price = price };
+            return Results.NoContent();
+        }
     }
 
     public object[] GetOrdersV2()
     {
-        lock (_sync)
-            return _orders.Select(ToV2).ToArray();
+        lock (_sync) return _orders.Select(ToV2).ToArray();
     }
-
     public IResult GetOrderV2(int id)
     {
         lock (_sync)
@@ -65,15 +70,9 @@ internal sealed class OrderService
                 : Results.Ok(ToV2(order));
         }
     }
-
     private static object ToV2(Order order) => new
     {
-        order.Id,
-        order.CreatedAtUtc,
-        order.Items,
-        order.Total,
-        order.Status,
-        ItemCount = order.Items.Sum(x => x.Quantity),
-        ApiVersion = "2.0"
+        order.Id, order.CreatedAtUtc, order.Items, order.Total, order.Status,
+        ItemCount = order.Items.Sum(x => x.Quantity), ApiVersion = "2.0"
     };
 }
