@@ -144,3 +144,34 @@ flowchart TD
 Модели C4 помогают рассмотреть систему на уровнях контекста, контейнеров и компонентов. UML-схема отражает основные программные части и их взаимодействие.
 
 Архитектура может быть расширена посредством подключения PostgreSQL, введения авторизации и выделения дополнительных сервисов.
+
+
+## 10. Графические материалы проекта
+
+Для документирования архитектуры и алгоритмов CafeteriaPOS подготовлены отдельные графические схемы.
+
+### 10.1. UML-диаграмма компонентов
+
+![UML Component](../CafeteriaPOS_Diagrams_Variant6/UML_COMPONENT.png)
+
+[Открыть SVG](../CafeteriaPOS_Diagrams_Variant6/UML_COMPONENT.svg)
+
+### 10.2. C4 — уровень Container
+
+![C4 Container](../CafeteriaPOS_Diagrams_Variant6/C4_CONTAINER.png)
+
+[Открыть SVG](../CafeteriaPOS_Diagrams_Variant6/C4_CONTAINER.svg)
+
+### 10.3. C4 — уровень Component
+
+![C4 Component](../CafeteriaPOS_Diagrams_Variant6/C4_COMPONENT.png)
+
+[Открыть SVG](../CafeteriaPOS_Diagrams_Variant6/C4_COMPONENT.svg)
+
+### 10.4. Блок-схема оформления заказа
+
+![Блок-схема заказа](../CafeteriaPOS_Diagrams_Variant6/ORDER_FLOWCHART.png)
+
+[Открыть SVG](../CafeteriaPOS_Diagrams_Variant6/ORDER_FLOWCHART.svg)
+
+Исходные DOT-файлы также доступны в папке CafeteriaPOS_Diagrams_Variant6. Они позволяют редактировать и повторно формировать схемы.
