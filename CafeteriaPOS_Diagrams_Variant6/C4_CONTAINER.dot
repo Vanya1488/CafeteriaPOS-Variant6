@@ -1,0 +1,22 @@
+digraph C4_CONTAINER {
+	bgcolor=white fontcolor="#172b4d" fontname="DejaVu Sans" fontsize=19 label="C4 — Container | CafeteriaPOS" labelloc=t nodesep=.6 pad=.32 rankdir=LR ranksep=.9 splines=polyline
+	node [color="#395273" fillcolor="#f1f5fa" fontcolor="#182c4a" fontname="DejaVu Sans" fontsize=11 margin=".22,.15" penwidth=1.35 style=filled]
+	edge [arrowsize=.7 color="#46617e" fontcolor="#344e68" fontname="DejaVu Sans" fontsize=10]
+	user [label="Пользователь / тестировщик
+[Person]" fillcolor="#eef2ff" shape=box]
+	subgraph cluster_system {
+		bgcolor="#f9fbfe" color="#5b7ba0" fontname="DejaVu Sans" fontsize=13 label="Граница системы CafeteriaPOS" style=rounded
+		web [label="CafeteriaPOS REST API
+[Container: ASP.NET Core / .NET 8]
+HTTP, JSON; маршруты v1/v2" fillcolor="#cde6fa" shape=box]
+		swagger [label="Swagger UI
+[Интерфейс внутри того же веб-приложения]" fillcolor="#e5f1fa" shape=note]
+		mem [label="Меню и заказы
+[Данные в памяти процесса]
+List<MenuItem>, List<Order>" fillcolor="#e5ecef" shape=cylinder]
+		swagger -> web [label="HTTP / JSON"]
+		web -> mem [label="читает / изменяет"]
+	}
+	user -> swagger [label="открывает в браузере"]
+	user -> web [label="GET / POST"]
+}

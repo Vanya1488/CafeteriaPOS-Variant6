@@ -1,0 +1,42 @@
+digraph ORDER_FLOWCHART {
+	bgcolor=white fontcolor="#172b4d" fontname="DejaVu Sans" fontsize=19 label="Алгоритм создания заказа — ГОСТ 19.701-90 (учебная блок-схема)" labelloc=t nodesep=.6 pad=.32 rankdir=TB ranksep=.9 splines=polyline
+	node [color="#395273" fillcolor="#f1f5fa" fontcolor="#182c4a" fontname="DejaVu Sans" fontsize=11 margin=".22,.15" penwidth=1.35 style=filled]
+	edge [arrowsize=.7 color="#46617e" fontcolor="#344e68" fontname="DejaVu Sans" fontsize=10]
+	nodesep=.34 ranksep=.55 splines=polyline
+	node [fontsize=10 margin=".13,.11"]
+	start [label="НАЧАЛО" fillcolor="#e3f0ff" shape=oval]
+	request [label="Получить CreateOrderRequest" shape=parallelogram]
+	notempty [label="Список Items
+не пуст?" fillcolor="#fff2d2" shape=diamond]
+	init [label="lines := []; i := 0" shape=box]
+	next [label="i < Items.Count?" fillcolor="#fff2d2" shape=diamond]
+	qty [label="Items[i].Quantity > 0?" fillcolor="#fff2d2" shape=diamond]
+	avail [label="Блюдо найдено
+и доступно?" fillcolor="#fff2d2" shape=diamond]
+	append [label="Добавить позицию в lines
+i := i + 1" shape=box]
+	sum [label="total := Σ(цена × количество)" shape=box]
+	store [label="Создать Order и добавить
+в список под lock" shape=box]
+	created [label="HTTP 201 Created
+Данные заказа" fillcolor="#e4f5e8" shape=parallelogram]
+	bad [label="HTTP 400 Bad Request
+Описание ошибки" fillcolor="#ffebeb" shape=parallelogram]
+	end [label="КОНЕЦ" fillcolor="#e3f0ff" shape=oval]
+	start -> request
+	request -> notempty
+	notempty -> init [label="Да"]
+	notempty -> bad [label="Нет"]
+	init -> next
+	next -> qty [label="Да"]
+	next -> sum [label="Нет"]
+	qty -> avail [label="Да"]
+	qty -> bad [label="Нет"]
+	avail -> append [label="Да"]
+	avail -> bad [label="Нет"]
+	append -> next [label="Следующая позиция" constraint=false]
+	sum -> store
+	store -> created
+	created -> end
+	bad -> end
+}

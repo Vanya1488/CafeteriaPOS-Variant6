@@ -1,0 +1,25 @@
+digraph C4_COMPONENT {
+	bgcolor=white fontcolor="#172b4d" fontname="DejaVu Sans" fontsize=19 label="C4 — Component | Контейнер ASP.NET Core" labelloc=t nodesep=.6 pad=.32 rankdir=LR ranksep=.9 splines=polyline
+	node [color="#395273" fillcolor="#f1f5fa" fontcolor="#182c4a" fontname="DejaVu Sans" fontsize=11 margin=".22,.15" penwidth=1.35 style=filled]
+	edge [arrowsize=.7 color="#46617e" fontcolor="#344e68" fontname="DejaVu Sans" fontsize=10]
+	client [label="HTTP-клиент / Swagger UI
+[Внешний пользователь контейнера]" fillcolor="#eef2ff" shape=box]
+	subgraph cluster_app {
+		bgcolor="#f9fbfe" color="#5b7ba0" fontname="DejaVu Sans" fontsize=13 label="CafeteriaPOS REST API — один процесс" style=rounded
+		routes [label="Маршруты Minimal API
+[Component: Program.cs]
+GET/POST v1, GET v2, /health" fillcolor="#cde6fa" shape=component]
+		svc [label="Обработка заказов
+[Component: OrderService]
+Валидация, расчёт суммы, ответы" fillcolor="#c9eadf" shape=component]
+		menu [label="Каталог меню
+[Данные: List<MenuItem>]" fillcolor="#e5ecef" shape=cylinder]
+		orders [label="Заказы
+[Данные: List<Order>]" fillcolor="#e5ecef" shape=cylinder]
+		routes -> svc [label="DI: GetMenu, GetOrders,
+CreateOrder, GetOrdersV2, GetOrderV2"]
+		svc -> menu [label="чтение"]
+		svc -> orders [label="чтение / запись; lock"]
+	}
+	client -> routes [label="HTTP / JSON"]
+}
